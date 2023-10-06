@@ -1,0 +1,149 @@
+<!-- =========================================================================================== -->
+<!-- symbajdbc JDBC 4.2 Builder.                                                             -->
+<!-- Copyright (C) 2015 Simba Technologies Incorporated.                                         -->
+<!-- =========================================================================================== -->
+<project name="symbajdbcJDBC4_2" default="debug-8" basedir=".">
+	<description>Builds the JDBC 4.2 Jar file for the Java QuickJson driver</description>
+
+	<!-- Import Common Ant Script -->
+	<property name="import.source" location="../CommonSource/symbajdbcBuilder.xml" />
+	<import file="${import.source}" />
+
+	<!-- The jars that are being build -->
+	<property name="java.quickjson.42.jar" value="symbajdbcJDBC42.jar" />
+	<property name="java.quickjson.42.javadoc.jar" value="symbajdbc-javadoc42.jar" />
+
+	<!-- Path to SimbaJDBC jars -->
+	<property name="simba.jdbc42.jar" location="${env.SIMBAENGINE_DIR}/Lib/SimbaJDBC42.jar" />
+
+	<property name="clover.database.jdbc42.db" Value="symbajdbcJDBC42.db" />
+
+	<!-- Requirements -->
+	<target name="requirements-8" depends="requirements" description="check for the JDBC 4.2 dependencies">
+		<available property="jdbc42.path.exists" type="file" file="${simba.jdbc42.jar}" />
+		<fail unless="jdbc42.path.exists" message="${simba.jdbc42.jar} is not found." />
+	</target>
+
+	<target name="jsql-requirements" depends="requirements" description="check for the jsqlengine dependencies">
+		<available property="jsqlengine.path.exists" type="file" file="${simba.jsqlengine.jar}" />
+		<fail unless="jsqlengine.path.exists" message="${simba.jsqlengine.jar} is not found." />
+	</target>
+
+	<!--Clover-->
+	<target name="clover.init.42">
+		<clover-setup initstring="${clover.database.dir}/${clover.database.jdbc42.db}" />
+	</target>
+
+	<!-- Compiling targets for JDBC 4.2 version of symbajdbc -->
+	<target name="compile-debug-8" description="compile Java QuickJson source in debug mode">
+		<mkdir dir="${dest.dir}" />
+		<javac target="11" sourcepath="${src.dir}" debug="on" srcdir="${dsii.src.dir}" destdir="${dest.dir}" includeantruntime="true">
+			<classpath path="${simba.jdbc42.jar}" />
+			<classpath path="${simba.jsqlengine.jar}" />
+			<classpath refid="jackson-jar-paths" />
+			<classpath refid="apacheArrow-jar-paths" />
+			<classpath refid="httpclient-jar-paths" />
+			<classpath refid="kerberos-jar-paths" />
+			<classpath refid="cxf-jar-paths" />
+		</javac>
+	</target>
+
+	<target name="compile-debug-clover-8" depends="clover.init.42" description="compile Java QuickJson source in debug mode with Clover">
+		<mkdir dir="${dest.dir}" />
+		<javac target="11" sourcepath="${src.dir}" debug="on" srcdir="${dsii.src.dir}" destdir="${dest.dir}">
+			<classpath path="${simba.jdbc42.jar}" />
+			<classpath path="${simba.jsqlengine.jar}" />
+			<classpath refid="jackson-jar-paths" />
+			<classpath refid="apacheArrow-jar-paths" />
+			<classpath refid="httpclient-jar-paths" />
+			<classpath refid="kerberos-jar-paths" />
+			<classpath refid="cxf-jar-paths" />
+		</javac>
+	</target>
+
+	<target name="compile-release-8" description="compile Java QuickJson source in release mode">
+		<mkdir dir="${dest.dir}" />
+		<javac target="11" sourcepath="${src.dir}" debug="off" optimize="on" srcdir="${dsii.src.dir}" destdir="${dest.dir}" includeantruntime="true">
+			<classpath path="${simba.jdbc42.jar}" />
+			<classpath path="${simba.jsqlengine.jar}" />
+			<classpath refid="jackson-jar-paths" />
+			<classpath refid="httpclient-jar-paths" />
+			<classpath refid="apacheArrow-jar-paths" />
+			<classpath refid="kerberos-jar-paths" />
+			<classpath refid="cxf-jar-paths" />
+
+		</javac>
+	</target>
+
+	<!-- Unjar the JDBC 4.2 version of SimbaEngine, and other dependencies -->
+	<target name="unjar-8" description="unjars the Simba JDBC jar file">
+		<unjar src="${simba.jdbc42.jar}" dest="${dest.dir}" />
+		<unjar src="${simba.jsqlengine.jar}" dest="${dest.dir}" />
+		<unjar src="${jackson-annotation.jar}" dest="${dest.dir}" />
+		<unjar src="${jackson-core.jar}" dest="${dest.dir}" />
+		<unjar src="${jackson-databind.jar}" dest="${dest.dir}" />
+		<unjar src="${arrow-memory-netty-8.0.0.jar}" dest="${dest.dir}" />
+		<unjar src="${arrow-memory-core-8.0.0.jar}" dest="${dest.dir}" />
+		<unjar src="${arrow-vector-8.0.0.jar}" dest="${dest.dir}" />
+		<unjar src="${jsqlparser.jar}" dest="${dest.dir}" />
+		
+	</target>
+
+	<!-- Targets for external use -->
+	<!-- Building targets for JDBC 4.2 version of symbajdbc -->
+	<target name="build-debug-8" depends="requirements-8, jsql-requirements,
+        clean-8, compile-debug-8, unjar-8, convert-property-files" description="generate the Java QuickJson Jar file in debug mode">
+		<mkdir dir="${jar.dest.dir}" />
+		<jar jarfile="${jar.dest.dir}/${java.quickjson.42.jar}" basedir="${dest.dir}" includes="com/simba/** com/fasterxml/jackson/** net/sf/jsqlparser/** ">
+			<service type="java.sql.Driver" provider="com.useready.rester.core.jdbc42.URJDBC42Driver" />
+		</jar>
+	</target>
+
+	<target name="build-debug-clover-8" depends="requirements-8, jsql-requirements, clean-8,
+        compile-debug-clover-8, unjar-8, convert-property-files" description="generate the Java QuickJson Jar file in debug mode with Clover">
+		<mkdir dir="${jar.dest.dir}" />
+		<jar jarfile="${jar.dest.dir}/${java.quickjson.42.jar}" basedir="${dest.dir}" includes="com/simba/** com/fasterxml/jackson/** net/sf/jsqlparser/**">
+			<service type="java.sql.Driver" provider="com.useready.rester.core.jdbc42.URJDBC42Driver" />
+		</jar>
+	</target>
+
+	<target name="build-release-8" depends="requirements-8, jsql-requirements, clean-8,
+        compile-release-8, unjar-8, convert-property-files" description="generate the Java QuickJson Jar file in release mode">
+		<mkdir dir="${jar.dest.dir}" />
+		<jar jarfile="${jar.dest.dir}/${java.quickjson.42.jar}" basedir="${dest.dir}" includes="com/simba/** com/fasterxml/jackson/** net/sf/jsqlparser/**">
+			<service type="java.sql.Driver" provider="com.useready.rester.core.jdbc42.URJDBC42Driver" />
+		</jar>
+	</target>
+
+	<target name="debug-8" depends="build-debug-8" description="generates the symbajdbc JDBC 42 Jar file in debug mode" />
+
+	<target name="debug-clover-8" depends="build-debug-clover-8" description="generates the symbajdbc JDBC 42 Jar file in debug mode" />
+
+	<target name="release-8" depends="build-release-8" description="generates the symbajdbc JDBC 42 Jar file in release mode" />
+
+	<target name="clean-8" depends="clean-doc" description="clean up">
+		<delete dir="${dest.dir}/com/" />
+		<delete file="${jar.dest.dir}/${java.quickjson.42.jar}" />
+		<delete file="${clover.database.dir}/${clover.database.jdbc42.db}" />
+	</target>
+
+	<target name="clean-doc" description="clean up javadoc">
+		<delete dir="${doc.dest.dir}/" />
+		<delete file="${jar.dest.dir}/${java.quickjson.42.javadoc.jar}" />
+	</target>
+
+	<target name="doc" description="generate javadoc" depends="clean-doc">
+		<javadoc destdir="${doc.dest.dir}">
+			<fileset dir="${src.dir}" includes="**/*.java" />
+			<fileset dir="${dsii.src.dir}" includes="**/*.java" />
+			<classpath path="${simba.jdbc42.jar}" />
+			<classpath path="${simba.jsqlengine.jar}" />
+			<doctitle>
+				<![CDATA[<h3>Java QuickJson Reference</h3>]]></doctitle>
+		<bottom>
+			<![CDATA[<i>Copyright &#169; 2006-2015 Simba Technologies Incorporated. All Rights Reserved.</i>]]></bottom>
+</javadoc>
+<jar jarfile="${jar.dest.dir}/${java.quickjson.42.javadoc.jar}" basedir="${doc.dest.dir}" />
+</target>
+
+</project>

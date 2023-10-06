@@ -1,0 +1,107 @@
+<?xml version="1.0"?>
+<!-- =========================================================================================== -->
+<!-- JavaQuickJson CommonSource Builder.                                                         -->
+<!-- Copyright (C) 2015 Simba Technologies Incorporated.                                         -->
+<!-- =========================================================================================== -->
+<project name="JavaQuickJsonDSII" default="-check.clover" basedir=".">
+	<description>Common source ant script for the Java QuickJson driver</description>
+	<echo>Java/JVM version: ${ant.java.version}</echo>
+	<echo>Java/JVM detail version: ${java.version}</echo>
+
+	<property environment="env" />
+	<taskdef resource="cloverlib.xml" classpath="${env.CLOVER_DIR}/lib/clover.jar" onerror="ignore" />
+	<property name="dsii.src.dir" location="src" />
+
+	<property name="dest.dir" location="bin" />
+	<property name="doc.dest.dir" location="doc" />
+	<property name="jar.dest.dir" location="output" />
+	<property name="src.dir" location="src" />
+
+	<property name="clover.database.dir" location="${env.CLOVER_DB}" />
+
+	<property name="included.locales" value="" />
+	<property name="optional.locales" value="" />
+
+	<property name="simba.jsqlengine.jar" location="libs/simba/SimbaSQLEngine.jar" />
+
+	<property name="jackson-annotation.jar" location="libs/jackson/jackson-annotations-2.4.3.jar" />
+	<property name="jackson-core.jar" location="libs/jackson/jackson-core-2.4.3.jar" />
+	<property name="jackson-databind.jar" location="libs/jackson/jackson-databind-2.4.3.jar" />
+
+	<property name="commons-codec.jar" location="libs/httpClient/commons-codec-1.15.jar" />
+	<property name="commons-logging.jar" location="libs/httpClient/commons-logging-1.2.jar" />
+	<property name="httpclient.jar" location="libs/httpClient/httpclient-4.5.14.jar" />
+	<property name="httpcore.jar" location="libs/httpClient/httpcore-4.4.16.jar" />
+	<property name="jsqlparser.jar" location="libs/httpClient/jsqlparser-4.1.jar" />
+	<property name="cxf-bundle-jaxrs-2.7.1.jar" location="libs/cxf/cxf-bundle-jaxrs-2.7.1.jar" />
+	<property name="cxf-core-3.2.6.jar" location="libs/cxf/cxf-core-3.2.6.jar" />
+	<property name="commons-logging-1.2.jar" location="libs/logging/commons-logging-1.2.jar" />
+	<property name="arrow-memory-netty-8.0.0.jar" location="libs/apacheArrow/arrow-memory-netty-8.0.0.jar" />
+	<property name="arrow-memory-core-8.0.0.jar" location="libs/apacheArrow/arrow-memory-core-8.0.0.jar" />
+	<property name="arrow-vector-8.0.0.jar" location="libs/apacheArrow/arrow-vector-8.0.0.jar" />
+
+	<path id="jackson-jar-paths">
+		<pathelement location="${jackson-annotation.jar}" />
+		<pathelement location="${jackson-core.jar}" />
+		<pathelement location="${jackson-databind.jar}" />
+	</path>
+	<path id="apacheArrow-jar-paths">
+			<pathelement location="${arrow-memory-core-8.0.0.jar}" />
+			<pathelement location="${arrow-memory-netty-8.0.0.jar}" />
+			<pathelement location="${arrow-vector-8.0.0.jar}" />
+		</path>
+	
+	<path id="httpclient-jar-paths">
+				<pathelement location="${httpclient.jar}" />
+				<pathelement location="${httpcore.jar}" />
+				<pathelement location="${commons-logging.jar}" />
+		<pathelement location="${commons-codec.jar}" />
+		<pathelement location="${cxf-bundle-jaxrs-2.7.1.jar}" />
+		<pathelement location="${cxf-core-3.2.6.jar}" />
+		<pathelement location="${commons-logging-1.2.jar}" />
+		<pathelement location="${jsqlparser.jar}" />
+		
+
+	</path>
+
+	<path id="cxf-jar-paths">
+		<pathelement location="${cxf-bundle-jaxrs-2.7.1.jar}" />
+		<pathelement location="${cxf-core-3.2.6.jar}" />
+		<pathelement location="${commons-logging-1.2.jar}" />
+	</path>
+
+	<!--Clover-->
+	<target name="-check.clover">
+		<available property="clover.installed" classname="com.atlassian.clover.CloverInstr" />
+	</target>
+
+	<target name="guard.noclover" depends="-check.clover" unless="clover.installed">
+		<fail message="The target you are attempting to run requires Clover, 
+        which doesn't appear to be installed" />
+	</target>
+
+	<target name="convert-property-files" description="Copy all .properties files to the destination dir and convert them to the 
+    correct encoding">
+		<native2ascii encoding="UTF-8" src="${src.dir}/com/useready/rester/core" dest="${dest.dir}/com/useready/rester/core" includes="**/*.properties">
+			<mapper type="regexp" from="(messages(_(${included.locales}))?\.properties)" to="\1" />
+		</native2ascii>
+	</target>
+
+	<!-- Requirements check target -->
+	<target name="requirements" description="check that environment variables exist">
+	<!-- 	<echo message="env.SIMBAENGINE_DIR = '${env.SIMBAENGINE_DIR}'" />
+		<echo message="env.SIMBAENGINE_THIRDPARTY_DIR = '${env.SIMBAENGINE_THIRDPARTY_DIR}'" />
+		<fail unless="env.SIMBAENGINE_DIR" message="Environment variable SIMBAENGINE_DIR must be set" />
+		<fail unless="env.SIMBAENGINE_THIRDPARTY_DIR" message="Environment variable SIMBAENGINE_THIRDPARTY_DIR must be set" />
+    --> 
+		<available property="jackson.annotation.path.exists" type="file" file="${jackson-annotation.jar}" />
+		<fail unless="jackson.annotation.path.exists" message="${jackson-annotation.jar} is not found." />
+
+		<available property="jackson.core.path.exists" type="file" file="${jackson-core.jar}" />
+		<fail unless="jackson.core.path.exists" message="${jackson-core.jar} is not found." />
+
+		<available property="jackson.databind.path.exists" type="file" file="${jackson-databind.jar}" />
+		<fail unless="jackson.databind.path.exists" message="${jackson-databind.jar} is not found." />
+	</target>
+
+</project>
